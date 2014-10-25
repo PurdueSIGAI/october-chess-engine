@@ -3,3 +3,4 @@ dist
 TAGS
 local.properties
 cache.properties
+/bin/
