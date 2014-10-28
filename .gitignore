@@ -4,3 +4,11 @@ TAGS
 local.properties
 cache.properties
 /bin/
+*.class
+*.classpath
+*.metadata
+*.project
+*.DS_Store
+.idea/
+*.iml
+out/
