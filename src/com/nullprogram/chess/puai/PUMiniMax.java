@@ -41,7 +41,7 @@ public class PUMiniMax implements Player {
 	
 	private MoveScore predictBestMove(Board board, int depth,Side side) {
 		if (depth == END_DEPTH) {
-			return new MoveScore(0); // Evaluate
+			return new MoveScore(evaluateBoard(board, side)); // Evaluate
 		} else {
 			MoveList moveList = board.allMoves(side, true);
 			Iterator<Move> i = moveList.iterator();
