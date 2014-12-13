@@ -25,7 +25,7 @@ public class PUMiniMax implements Player {
 	static final int END_DEPTH = 3;
 	private HashMap<Class, Integer> values;
 	private Game game;
-	
+	Side mySide;
 	public PUMiniMax(Game game) {
 		values = setUpValues();
 		this.game = game;
@@ -33,6 +33,7 @@ public class PUMiniMax implements Player {
 
 	@Override
 	public Move takeTurn(Board board, Side side) {
+		mySide=side;
 		MoveScore moveScore=predictBestMove(board,0,side);
 		System.out.println(moveScore);
 		// TODO Auto-generated method stub
@@ -45,14 +46,25 @@ public class PUMiniMax implements Player {
 		} else {
 			MoveList moveList = board.allMoves(side, true);
 			Iterator<Move> i = moveList.iterator();
-			MoveScore bestMove = new MoveScore(Integer.MIN_VALUE);
+			MoveScore bestMove = null;
+			if(side==mySide){
+				bestMove=new MoveScore(Integer.MIN_VALUE);
+			}else{
+				bestMove=new MoveScore(Integer.MAX_VALUE);
+			}
 			while (i.hasNext()) {
 				Move move = i.next();
 				board.move(move);
 				MoveScore current = predictBestMove(board, depth + 1,Piece.opposite(side));
 				current.setMove(move);
-				if (current.getScore() > bestMove.getScore()) {
-					bestMove=current;
+				if(side==mySide){
+					if (current.getScore() >= bestMove.getScore()) {
+						bestMove=current;
+					}
+				}else{
+					if (current.getScore() <= bestMove.getScore()) {
+						bestMove=current;
+					}	
 				}
 				board.undo();
 			}
