@@ -1,20 +1,23 @@
 package com.nullprogram.chess.gui;
 
-import com.nullprogram.chess.Board;
-import com.nullprogram.chess.Game;
-import com.nullprogram.chess.Player;
-import com.nullprogram.chess.ai.Minimax;
-import com.nullprogram.chess.boards.Gothic;
-import com.nullprogram.chess.boards.StandardBoard;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+
+import com.nullprogram.chess.Board;
+import com.nullprogram.chess.Game;
+import com.nullprogram.chess.Player;
+import com.nullprogram.chess.ai.Minimax;
+import com.nullprogram.chess.boards.Gothic;
+import com.nullprogram.chess.boards.StandardBoard;
+import com.nullprogram.chess.puai.PUMiniMax;
 
 /**
  * Presents the "New Game" dialog to let the user set up a game.
@@ -102,6 +105,8 @@ public class NewGame extends JDialog implements ActionListener {
     private Player createPlayer(final Game game, final String name) {
         if ("human".equals(name)) {
             return parent.getPlayer();
+        } else if ("puai".equals(name)) {
+        	return new PUMiniMax(game);
         } else {
             return new Minimax(game, name);
         }
