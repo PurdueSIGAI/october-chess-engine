@@ -42,9 +42,9 @@ public class PUMiniMax implements Player {
 	
 	private MoveScore predictBestMove(Board board, int depth,Side side) {
 		if (depth == END_DEPTH) {
-			return new MoveScore(evaluateBoard(board, side)); // Evaluate
+			return new MoveScore(evaluateBoard(board, mySide)); // Evaluate
 		} else {
-			MoveList moveList = board.allMoves(side, true);
+			MoveList moveList = board.allMoves(side, false); // Include positions which cause a check
 			Iterator<Move> i = moveList.iterator();
 			MoveScore bestMove = null;
 			if(side==mySide){
@@ -58,13 +58,17 @@ public class PUMiniMax implements Player {
 				MoveScore current = predictBestMove(board, depth + 1,Piece.opposite(side));
 				current.setMove(move);
 				if(side==mySide){
-					if (current.getScore() >= bestMove.getScore()) {
+					if (current.getScore() > bestMove.getScore()) {
+						bestMove=current;
+					} else if (current.getScore() == bestMove.getScore() && Math.random() < 0.3) {
 						bestMove=current;
 					}
 				}else{
-					if (current.getScore() <= bestMove.getScore()) {
+					if (current.getScore() < bestMove.getScore()) {
 						bestMove=current;
-					}	
+					} else if (current.getScore() == bestMove.getScore() && Math.random() < 0.3) {
+						bestMove=current;
+					}
 				}
 				board.undo();
 			}
@@ -118,7 +122,16 @@ public class PUMiniMax implements Player {
 				}
 			}
 		}
-		return myPoints - enemyPoints;
+		int runningPoints = myPoints - enemyPoints;
+		if (runningPoints < 0 && board.stalemate()) {
+			runningPoints += 1;
+		} else if (runningPoints > 0 && board.stalemate()) {
+			runningPoints -= 1;
+		}
+		if (board.checkmate(side)) {
+			runningPoints -= 1000;
+		}
+		return runningPoints;
 	}
 	
 	private int getPieceValue(Piece p) {
