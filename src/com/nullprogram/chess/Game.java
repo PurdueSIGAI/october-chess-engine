@@ -149,6 +149,12 @@ public class Game implements Runnable {
                 winner = null;
                 callGameListeners(GameEvent.GAME_END);
                 return;
+            } else if (board.threeFold()) {
+            	done = true;
+                setStatus("Three Fold Repetition!");
+                winner = null;
+                callGameListeners(GameEvent.GAME_END);
+                return;
             }
             callGameListeners(GameEvent.TURN);
         }

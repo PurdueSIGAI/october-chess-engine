@@ -1,9 +1,17 @@
 package com.nullprogram.chess;
 
-import com.nullprogram.chess.boards.BoardFactory;
-import com.nullprogram.chess.pieces.King;
-import com.nullprogram.chess.pieces.PieceFactory;
 import java.io.Serializable;
+import java.util.HashMap;
+
+import com.nullprogram.chess.boards.BoardFactory;
+import com.nullprogram.chess.boards.StandardBoard;
+import com.nullprogram.chess.pieces.Bishop;
+import com.nullprogram.chess.pieces.King;
+import com.nullprogram.chess.pieces.Knight;
+import com.nullprogram.chess.pieces.Pawn;
+import com.nullprogram.chess.pieces.PieceFactory;
+import com.nullprogram.chess.pieces.Queen;
+import com.nullprogram.chess.pieces.Rook;
 
 /**
  * Board data structure.
@@ -351,4 +359,55 @@ public abstract class Board implements Serializable {
     public final int moveCount() {
         return moves.size();
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder ret = new StringBuilder();
+    	for (int y = 0; y < boardHeight; y++) {
+            for (int x = 0; x < boardWidth; x++) {
+                Piece p = board[x][y];
+                if (p == null) {
+                	ret.append("  ");
+                } else {
+                	if (p.getSide() == Piece.Side.WHITE) {
+                		ret.append("W");
+                	} else {
+                		ret.append("B");
+                	}
+                	if (p instanceof Bishop) {
+                		ret.append("B");
+                	} else if (p instanceof King) {
+                		ret.append("K");
+                	} else if (p instanceof Knight) {
+                		ret.append("N");
+                	} else if (p instanceof Pawn) {
+                		ret.append("P");
+                	} else if (p instanceof Queen) {
+                		ret.append("Q");
+                	} else if (p instanceof Rook) {
+                		ret.append("R");
+                	}
+                }
+            }
+        }
+    	return ret.toString();
+    }
+
+	public boolean threeFold() {
+		Board testBoard = BoardFactory.create(StandardBoard.class);
+		HashMap<String, Integer> boards = new HashMap<String, Integer>();
+		for (Move m : moves) {
+			testBoard.move(m);
+			String state = testBoard.toString();
+			if (boards.containsKey(state)) {
+				boards.put(state, boards.get(state) + 1);
+				if (boards.get(state) >= 3) {
+					return true;
+				}
+			} else {
+				boards.put(state, 1);
+			}
+		}
+		return false;
+	}
 }
