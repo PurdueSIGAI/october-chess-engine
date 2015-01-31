@@ -159,11 +159,13 @@ public class PUMiniMax implements Player {
 			}
 		}
 		int runningPoints = myPoints - enemyPoints;
-		if (runningPoints < 0 && board.stalemate()) {
+		
+		if (runningPoints < 0 && (board.stalemate() || board.threeFold())) {
 			runningPoints += 1;
-		} else if (runningPoints > 0 && board.stalemate()) {
-			runningPoints -= 1;
+		} else if (runningPoints > 0 && (board.stalemate() || board.threeFold())) {
+			runningPoints -= 2;
 		}
+		
 		if (board.checkmate(side)) {
 			runningPoints -= 1000;
 		}
