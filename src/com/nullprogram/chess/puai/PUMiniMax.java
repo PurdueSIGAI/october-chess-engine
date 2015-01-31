@@ -2,6 +2,7 @@ package com.nullprogram.chess.puai;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Timer;
 
 import com.nullprogram.chess.Board;
 import com.nullprogram.chess.Game;
@@ -22,29 +23,64 @@ import com.nullprogram.chess.pieces.Rook;
 
 public class PUMiniMax implements Player {
 	
-	static final int END_DEPTH = 3;
+	static final int MAX_TIME = 10000;
+	private int endDepth;
+	
+	private boolean endTurn;
+
+	private Timer timer;
+	private AITimerTask timerTask;
 	private HashMap<Class, Integer> values;
 	private Game game;
 	Side mySide;
 	public PUMiniMax(Game game) {
 		values = setUpValues();
 		this.game = game;
+		timer = new Timer();
 	}
 
 	@Override
 	public Move takeTurn(Board board, Side side) {
+		endTurn = false;
 		mySide=side;
-		MoveScore moveScore=predictBestMove(board,0,side);
-		System.out.println(moveScore);
-		// TODO Auto-generated method stub
-		return moveScore.getMove();
+		// Schedule a timer for time completion
+		timerTask = new AITimerTask(this);
+		timer.schedule(timerTask, MAX_TIME);
+		endDepth = 1;
+		
+		MoveScore bestMove = new MoveScore(Integer.MIN_VALUE);
+		
+		// Iteratively deepen the minimax search space until time runs out
+		do {
+			System.out.println("Searching " + endDepth + " plies.");
+			MoveScore moveScore=predictBestMove(board,0,side);
+			// We have searched the entire tree to endDepth, get rid of previous bestMove
+			// This allows us to compare only full trees and the depth we are currently searching if the turn ends
+			if (!endTurn) {
+				System.out.println("Clearing previous best");
+				bestMove = new MoveScore(Integer.MIN_VALUE);
+			}
+			// Get the best move we have seen
+			if (moveScore.getScore() > bestMove.getScore()) {
+				bestMove = moveScore;
+			}
+			endDepth++;
+		} while (!endTurn);
+		
+		timerTask.cancel();
+		timer.purge();
+		System.out.println(bestMove);
+		return bestMove.getMove();
 	}
 	
 	private MoveScore predictBestMove(Board board, int depth,Side side) {
-		if (depth == END_DEPTH) {
+		if (depth == endDepth || endTurn) {
 			return new MoveScore(evaluateBoard(board, mySide)); // Evaluate
 		} else {
-			MoveList moveList = board.allMoves(side, false); // Include positions which cause a check
+			MoveList moveList = board.allMoves(side, true);
+			if (moveList.isEmpty()) {
+				return new MoveScore(evaluateBoard(board, mySide));
+			}
 			Iterator<Move> i = moveList.iterator();
 			MoveScore bestMove = null;
 			if(side==mySide){
@@ -149,5 +185,14 @@ public class PUMiniMax implements Player {
 		values.put(new Queen(null).getClass(), 9);
 		values.put(new Rook(null).getClass(), 5);
 		return values;
+	}
+	
+	
+	public boolean isEndTurn() {
+		return endTurn;
+	}
+
+	public void setEndTurn(boolean endTurn) {
+		this.endTurn = endTurn;
 	}
 }
