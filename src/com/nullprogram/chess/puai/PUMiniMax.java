@@ -52,12 +52,10 @@ public class PUMiniMax implements Player {
 		
 		// Iteratively deepen the minimax search space until time runs out
 		do {
-			System.out.println("Searching " + endDepth + " plies.");
-			MoveScore moveScore=predictBestMove(board,0,side);
+			MoveScore moveScore=predictBestMove(board,0,side, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			// We have searched the entire tree to endDepth, get rid of previous bestMove
 			// This allows us to compare only full trees and the depth we are currently searching if the turn ends
 			if (!endTurn) {
-				System.out.println("Clearing previous best");
 				bestMove = new MoveScore(Integer.MIN_VALUE);
 			}
 			// Get the best move we have seen
@@ -69,8 +67,104 @@ public class PUMiniMax implements Player {
 		
 		timerTask.cancel();
 		timer.purge();
+		System.out.println("Search ended on ply " + endDepth + ".");
 		System.out.println(bestMove);
 		return bestMove.getMove();
+	}
+	
+	private MoveScore predictBestMove(Board board, int depth, Side side, double alpha, double beta) {
+		if (depth == endDepth || endTurn) {
+			return new MoveScore(evaluateBoard(board, mySide)); // Evaluate
+		}
+		
+		/*
+		 * if minNode
+		 * 	for every kid
+		 * 		if kid < beta
+		 * 			beta = kid
+		 *		if beta <= alpha
+		 *			break
+		 *	return bestMove   - beta
+		 * if maxNode
+		 * 	for every kid
+		 * 		if kid > alpha
+		 * 			alpha = kid
+		 * 		if beta <= alpha
+		 * 			break
+		 * 	return bestMove   - alpha
+		 */
+		
+		// If we are a minNode (side != mySide)
+		if (side != mySide) {
+//			System.out.println("min player");
+			// Store our best move
+			MoveScore bestMove = new MoveScore(Integer.MAX_VALUE);
+			
+			// Get all the children
+			MoveList moveList = board.allMoves(side, true);
+			if (moveList.isEmpty()) {
+				// There are no children, so evaluate and return
+				return new MoveScore(evaluateBoard(board, mySide));
+			}
+			
+			Iterator<Move> i = moveList.iterator();
+			// Iterate through all the children
+//			System.out.printf("alpha %d, beta %d\n", alpha, beta);
+			while (i.hasNext()) {
+				Move move = i.next();
+				board.move(move);;
+				MoveScore current = predictBestMove(board, depth+1, Piece.opposite(side), alpha, beta);
+				current.setMove(move);
+//				System.out.println("  " + current);
+				
+				if (current.getScore() < beta) {
+					beta = current.getScore();
+					bestMove = current;
+				}
+				
+				board.undo();
+				
+				if (beta <= alpha) {
+					break;
+				}
+			}
+//			System.out.println("best " + bestMove);
+			return bestMove;
+		} else {
+			// Store our best move
+			MoveScore bestMove = new MoveScore(Integer.MIN_VALUE);
+//			System.out.println("max player");
+			// Get all the children
+			MoveList moveList = board.allMoves(side, true);
+			if (moveList.isEmpty()) {
+				// There are no children, so evaluate and return
+				return new MoveScore(evaluateBoard(board, mySide));
+			}
+			
+			Iterator<Move> i = moveList.iterator();
+			// Iterate through all the children
+//			System.out.printf("depth %d, alpha %d, beta %d\n", depth, alpha, beta);
+			while (i.hasNext()) {
+				Move move = i.next();
+				board.move(move);;
+				MoveScore current = predictBestMove(board, depth+1, Piece.opposite(side), alpha, beta);
+				current.setMove(move);
+//				System.out.println("  " + current);
+				
+				if (current.getScore() > alpha) {
+					alpha = current.getScore();
+					bestMove = current;
+				}
+				
+				board.undo();
+				
+				if (beta <= alpha) {
+					break;
+				}
+			}
+//			System.out.println("best " + bestMove);
+			return bestMove;
+		}
 	}
 	
 	private MoveScore predictBestMove(Board board, int depth,Side side) {
@@ -114,16 +208,16 @@ public class PUMiniMax implements Player {
 	
 	class MoveScore{
 
-		int score;
+		double score;
 		Move move;
 		
-		public MoveScore(int score) {
+		public MoveScore(double score) {
 			this.score = score;
 		}
 		public void setMove(Move move) {
 			this.move = move;
 		}
-		public int getScore() {
+		public double getScore() {
 			return score;
 		}
 		public Move getMove() {
@@ -142,7 +236,7 @@ public class PUMiniMax implements Player {
 	 * @param side
 	 * @return
 	 */
-	private int evaluateBoard(Board board, Side side) {
+	private double evaluateBoard(Board board, Side side) {
 		int myPoints = 0;
 		int enemyPoints = 0;
 		
