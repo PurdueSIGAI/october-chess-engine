@@ -22,6 +22,8 @@ import com.nullprogram.chess.pieces.Pawn;
 import com.nullprogram.chess.pieces.Queen;
 import com.nullprogram.chess.pieces.Rook;
 
+//testing branch
+
 public class KumarAI implements Player {
 	
 	private int endDepth;
