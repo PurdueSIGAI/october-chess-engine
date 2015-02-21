@@ -155,6 +155,11 @@ public class Game implements Runnable {
                 winner = null;
                 callGameListeners(GameEvent.GAME_END);
                 return;
+            } else if (board.fiftyMoveRule()) {
+            	done = true;
+            	setStatus("Fifty move rule");
+            	callGameListeners(GameEvent.GAME_END);
+            	return;
             }
             callGameListeners(GameEvent.TURN);
         }
