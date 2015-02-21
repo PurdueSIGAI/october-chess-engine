@@ -1,4 +1,4 @@
-package com.nullprogram.chess.puai;
+package com.nullprogram.chess.nikolasai;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,7 +22,7 @@ import com.nullprogram.chess.pieces.Pawn;
 import com.nullprogram.chess.pieces.Queen;
 import com.nullprogram.chess.pieces.Rook;
 
-public class PUMiniMax implements Player {
+public class NikolasAI implements Player {
 	
 	private int endDepth;
 	
@@ -33,7 +33,7 @@ public class PUMiniMax implements Player {
 	private HashMap<Class, Integer> values;
 	private Game game;
 	Side mySide;
-	public PUMiniMax(Game game) {
+	public NikolasAI(Game game) {
 		values = setUpValues();
 		this.game = game;
 		timer = new Timer();

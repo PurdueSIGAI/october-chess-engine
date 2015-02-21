@@ -17,6 +17,7 @@ import com.nullprogram.chess.Player;
 import com.nullprogram.chess.ai.Minimax;
 import com.nullprogram.chess.boards.Gothic;
 import com.nullprogram.chess.boards.StandardBoard;
+import com.nullprogram.chess.nikolasai.NikolasAI;
 import com.nullprogram.chess.puai.PUMiniMax;
 
 /**
@@ -107,6 +108,14 @@ public class NewGame extends JDialog implements ActionListener {
             return parent.getPlayer();
         } else if ("puai".equals(name)) {
         	return new PUMiniMax(game);
+        } else if ("nikolasai".equals(name)) {
+        	return new NikolasAI(game);
+        } else if ("matthewpai".equals(name)) {
+        	return new NikolasAI(game);
+        } else if ("michaelai".equals(name)) {
+        	return new NikolasAI(game);
+        } else if ("kumarai".equals(name)) {
+        	return new NikolasAI(game);
         } else {
             return new Minimax(game, name);
         }
