@@ -3,7 +3,6 @@ package com.nullprogram.chess.matthewpai;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Timer;
-// hi
 import com.nullprogram.chess.Board;
 import com.nullprogram.chess.Chess;
 import com.nullprogram.chess.Game;
