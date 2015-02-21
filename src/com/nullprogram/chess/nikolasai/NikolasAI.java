@@ -22,6 +22,10 @@ import com.nullprogram.chess.pieces.Pawn;
 import com.nullprogram.chess.pieces.Queen;
 import com.nullprogram.chess.pieces.Rook;
 
+/**
+ * Nikolas Ogg's AI
+ */
+
 public class NikolasAI implements Player {
 	
 	private int endDepth;
