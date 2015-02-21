@@ -410,4 +410,26 @@ public abstract class Board implements Serializable {
 		}
 		return false;
 	}
+
+	public boolean fiftyMoveRule() {
+		Board testBoard = BoardFactory.create(StandardBoard.class);
+		HashMap<String, Integer> boards = new HashMap<String, Integer>();
+		int movesSince = 0;
+		for (Move m : moves) {
+			// Check if a pawn was moved
+			if (testBoard.getPiece(m.getOrigin()) instanceof Pawn) {
+				movesSince = 0;
+			}
+			
+			testBoard.move(m);
+			
+			if (m.getCaptured() != null) {
+				movesSince = 0;
+			}
+			
+			movesSince++;
+		}
+		// 100 since a move is both players moving
+		return (movesSince > 100);
+	}
 }
