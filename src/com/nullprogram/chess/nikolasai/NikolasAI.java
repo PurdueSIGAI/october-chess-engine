@@ -241,8 +241,44 @@ public class NikolasAI implements Player {
 	 * @return
 	 */
 	private double evaluateBoard(Board board, Side side) {
-		int myPoints = 0;
-		int enemyPoints = 0;
+		/*
+		 * Evaluation ideas:
+		 * 	available moves
+		 *  how well the kings can move & king safety
+		 *  area of board under control
+		 *  center control
+		 *  pawn distance to other side (straight line distance, if stuff is in the way it doesn't count)
+		 *  checkmates
+		 *  checks
+		 *  
+		 *  Avoiding / preferring ties
+		 */
+		
+		// Weights
+		double materialWeight = 2.0;
+		
+		
+		double runningPoints = 0;
+		
+		double materialValue = getMaterialScore(board, side);
+		runningPoints += materialValue * materialWeight;
+		
+		
+		if (runningPoints < 0 && (board.stalemate() || board.threeFold())) {
+			runningPoints += 1;
+		} else if (runningPoints > 0 && (board.stalemate() || board.threeFold())) {
+			runningPoints -= 2;
+		}
+		
+		if (board.checkmate(side)) {
+			runningPoints -= 1000;
+		}
+		return runningPoints;
+	}
+	
+	private double getMaterialScore(Board board, Side side) {
+		double myPoints = 0;
+		double enemyPoints = 0;
 		
 		for (int i = 0; i < board.getWidth(); i++) {
 			for (int j = 0; j < board.getHeight(); j++) {
@@ -256,18 +292,7 @@ public class NikolasAI implements Player {
 				}
 			}
 		}
-		int runningPoints = myPoints - enemyPoints;
-		
-		if (runningPoints < 0 && (board.stalemate() || board.threeFold())) {
-			runningPoints += 1;
-		} else if (runningPoints > 0 && (board.stalemate() || board.threeFold())) {
-			runningPoints -= 2;
-		}
-		
-		if (board.checkmate(side)) {
-			runningPoints -= 1000;
-		}
-		return runningPoints;
+		return myPoints - enemyPoints;
 	}
 	
 	private int getPieceValue(Piece p) {
