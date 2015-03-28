@@ -233,6 +233,9 @@ public class NikolasAI implements Player {
 		}
 	}
 	
+	// Weights
+	private static final double MATERIAL_WEIGHT = 1.0;
+	private static final double KING_SAFETY_WEIGHT = 1.0;
 	
 	/**
 	 * Given a state of the board, evaluate the board with respect to the given side.
@@ -254,16 +257,19 @@ public class NikolasAI implements Player {
 		 *  Avoiding / preferring ties
 		 */
 		
-		// Weights
-		double materialWeight = 2.0;
-		
 		
 		double runningPoints = 0;
 		
+		// Calculate the value of the pieces on the board
 		double materialValue = getMaterialScore(board, side);
-		runningPoints += materialValue * materialWeight;
+		runningPoints += materialValue * MATERIAL_WEIGHT;
+		
+		double kingSafety = getKingSafetyScore(board, side);
+		runningPoints += kingSafety * KING_SAFETY_WEIGHT;
 		
 		
+		// If we are losing, favor ties
+		// If we are winning, try to avoid ties
 		if (runningPoints < 0 && (board.stalemate() || board.threeFold())) {
 			runningPoints += 1;
 		} else if (runningPoints > 0 && (board.stalemate() || board.threeFold())) {
@@ -295,20 +301,24 @@ public class NikolasAI implements Player {
 		return myPoints - enemyPoints;
 	}
 	
+	private double getKingSafetyScore(Board board, Side side) {
+		return 0;
+	}
+	
 	private int getPieceValue(Piece p) {
 		return values.get(p.getClass());
 	}
 	
 	private HashMap<Class, Integer> setUpValues() {
 		HashMap<Class, Integer> values = new HashMap<Class, Integer>();
-		values.put(new Archbishop(null).getClass(), 4);
-		values.put(new Bishop(null).getClass(), 3);
-		values.put(new Chancellor(null).getClass(), 4);
-		values.put(new King(null).getClass(), 1000);
-		values.put(new Knight(null).getClass(), 3);
-		values.put(new Pawn(null).getClass(), 1);
-		values.put(new Queen(null).getClass(), 9);
-		values.put(new Rook(null).getClass(), 5);
+		values.put(Archbishop.class, 4);
+		values.put(Bishop.class, 3);
+		values.put(Chancellor.class, 4);
+		values.put(King.class, 1000);
+		values.put(Knight.class, 3);
+		values.put(Pawn.class, 1);
+		values.put(Queen.class, 9);
+		values.put(Rook.class, 5);
 		return values;
 	}
 	
