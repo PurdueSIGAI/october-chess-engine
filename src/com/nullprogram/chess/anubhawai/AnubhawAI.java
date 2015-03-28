@@ -30,6 +30,7 @@ public class AnubhawAI implements Player {
 
 	private Timer timer;
 	private AITimerTask timerTask;
+	@SuppressWarnings("rawtypes")
 	private HashMap<Class, Integer> values;
 	private Game game;
 	Side mySide;
@@ -229,6 +230,7 @@ public class AnubhawAI implements Player {
 		return values.get(p.getClass());
 	}
 
+	@SuppressWarnings("rawtypes")
 	private HashMap<Class, Integer> setUpValues() {
 		HashMap<Class, Integer> values = new HashMap<Class, Integer>();
 		values.put(Archbishop.class, 4);
