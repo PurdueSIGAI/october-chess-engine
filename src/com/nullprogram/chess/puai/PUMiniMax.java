@@ -272,14 +272,14 @@ public class PUMiniMax implements Player {
 	
 	private HashMap<Class, Integer> setUpValues() {
 		HashMap<Class, Integer> values = new HashMap<Class, Integer>();
-		values.put(new Archbishop(null).getClass(), 4);
-		values.put(new Bishop(null).getClass(), 3);
-		values.put(new Chancellor(null).getClass(), 4);
-		values.put(new King(null).getClass(), 1000);
-		values.put(new Knight(null).getClass(), 3);
-		values.put(new Pawn(null).getClass(), 1);
-		values.put(new Queen(null).getClass(), 9);
-		values.put(new Rook(null).getClass(), 5);
+		values.put(Archbishop.class, 4);
+		values.put(Bishop.class, 3);
+		values.put(Chancellor.class, 4);
+		values.put(King.class, 1000);
+		values.put(Knight.class, 3);
+		values.put(Pawn.class, 1);
+		values.put(Queen.class, 9);
+		values.put(Rook.class, 5);
 		return values;
 	}
 	
