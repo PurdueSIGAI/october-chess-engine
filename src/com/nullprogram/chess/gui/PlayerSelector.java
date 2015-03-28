@@ -27,6 +27,7 @@ public class PlayerSelector extends JPanel {
     	"Matthew Page AI",
     	"Michael AI",
     	"Kumar AI",
+    	"Anubhaw AI",
         "Fool (2 plies)",
         "Very Easy (3 plies)",
         "Easy (4 plies)",
@@ -38,11 +39,8 @@ public class PlayerSelector extends JPanel {
 
     /** Configuration names corresponding to LABELS_AI. */
     private static final String[] NAMES_AI = {
-        "puai", "nikolasai", "matthewpai", "michaelai", "kumarai", "depth2", "depth3", "depth4", "depth5", "depth6", "depth7", "depth8",
+        "puai", "nikolasai", "matthewpai", "michaelai", "kumarai","anubhawai", "depth2", "depth3", "depth4", "depth5", "depth6", "depth7", "depth8",
     };
-
-    /** The default AI selection in the JList. */
-    private static final int DEFAULT_AI = 2;
 
     /** Selection for a human player. */
     private final JRadioButton human = new JRadioButton("Human");;
@@ -65,7 +63,7 @@ public class PlayerSelector extends JPanel {
      * @param title title for this selector
      * @param humanSet select the human player by default
      */
-    public PlayerSelector(final String title, final boolean humanSet) {
+    public PlayerSelector(final String title, final boolean humanSet,final int selectedAI) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         JLabel label = new JLabel(title);
         add(label);
@@ -77,7 +75,7 @@ public class PlayerSelector extends JPanel {
         human.setSelected(humanSet);
         minimax.setSelected(!humanSet);
         ai.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        ai.setSelectedIndex(DEFAULT_AI);
+        ai.setSelectedIndex(selectedAI);
         ai.setEnabled(!humanSet);
 
         /* Set up widget alignment. */
