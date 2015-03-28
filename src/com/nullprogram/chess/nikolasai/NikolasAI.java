@@ -301,6 +301,12 @@ public class NikolasAI implements Player {
 		return myPoints - enemyPoints;
 	}
 	
+	/**
+	 * Return a measure of king safety
+	 * @param board
+	 * @param side
+	 * @return
+	 */
 	private double getKingSafetyScore(Board board, Side side) {
 		return 0;
 	}
