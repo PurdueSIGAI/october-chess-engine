@@ -82,12 +82,6 @@ public class AnubhawAI implements Player {
 			return new MoveScore(evaluateBoard(board, mySide)); // Evaluate
 		}
 
-		/*
-		 * if minNode for every kid if kid < beta beta = kid if beta <= alpha
-		 * break return bestMove - beta if maxNode for every kid if kid > alpha
-		 * alpha = kid if beta <= alpha break return bestMove - alpha
-		 */
-
 		// If we are a minNode (side != mySide)
 		if (side != mySide) {
 			// System.out.println("min player");
@@ -107,7 +101,7 @@ public class AnubhawAI implements Player {
 			while (i.hasNext()) {
 				Move move = i.next();
 				board.move(move);
-				;
+
 				MoveScore current = predictBestMove(board, depth + 1,
 						Piece.opposite(side), alpha, beta);
 				current.setMove(move);
@@ -144,7 +138,7 @@ public class AnubhawAI implements Player {
 			while (i.hasNext()) {
 				Move move = i.next();
 				board.move(move);
-				;
+
 				MoveScore current = predictBestMove(board, depth + 1,
 						Piece.opposite(side), alpha, beta);
 				current.setMove(move);
@@ -162,48 +156,6 @@ public class AnubhawAI implements Player {
 				}
 			}
 			// System.out.println("best " + bestMove);
-			return bestMove;
-		}
-	}
-
-	private MoveScore predictBestMove(Board board, int depth, Side side) {
-		if (depth == endDepth || endTurn) {
-			return new MoveScore(evaluateBoard(board, mySide)); // Evaluate
-		} else {
-			MoveList moveList = board.allMoves(side, true);
-			if (moveList.isEmpty()) {
-				return new MoveScore(evaluateBoard(board, mySide));
-			}
-			Iterator<Move> i = moveList.iterator();
-			MoveScore bestMove = null;
-			if (side == mySide) {
-				bestMove = new MoveScore(Integer.MIN_VALUE);
-			} else {
-				bestMove = new MoveScore(Integer.MAX_VALUE);
-			}
-			while (i.hasNext()) {
-				Move move = i.next();
-				board.move(move);
-				MoveScore current = predictBestMove(board, depth + 1,
-						Piece.opposite(side));
-				current.setMove(move);
-				if (side == mySide) {
-					if (current.getScore() > bestMove.getScore()) {
-						bestMove = current;
-					} else if (current.getScore() == bestMove.getScore()
-							&& Math.random() < 0.3) {
-						bestMove = current;
-					}
-				} else {
-					if (current.getScore() < bestMove.getScore()) {
-						bestMove = current;
-					} else if (current.getScore() == bestMove.getScore()
-							&& Math.random() < 0.3) {
-						bestMove = current;
-					}
-				}
-				board.undo();
-			}
 			return bestMove;
 		}
 	}
