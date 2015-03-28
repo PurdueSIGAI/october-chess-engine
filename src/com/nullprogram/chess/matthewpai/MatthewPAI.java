@@ -32,8 +32,9 @@ public class MatthewPAI implements Player {
 	private HashMap<Class, Integer> values;
 	private Game game;
 	Side mySide;
+	
 	public MatthewPAI(Game game) {
-		values = setUpValues();
+		values = Evaluation.setUpValues();
 		this.game = game;
 		timer = new Timer();
 	}
@@ -48,6 +49,7 @@ public class MatthewPAI implements Player {
 		endDepth = 1;
 		
 		MoveScore bestMove = new MoveScore(Integer.MIN_VALUE);
+		
 		
 		// Iteratively deepen the minimax search space until time runs out
 		do {
@@ -70,218 +72,56 @@ public class MatthewPAI implements Player {
 		System.out.println(bestMove);
 		return bestMove.getMove();
 	}
-	
+		
 	private MoveScore predictBestMove(Board board, int depth, Side side, double alpha, double beta) {
+		if (TranspositionTable.shouldUse(board, depth, endDepth))
+			return TranspositionTable.getValue(board);
+		
 		if (depth == endDepth || endTurn) {
-			return new MoveScore(evaluateBoard(board, mySide)); // Evaluate
+			return new MoveScore(Evaluation.evaluateBoard(board, mySide)); // Evaluate
 		}
 		
-		/*
-		 * if minNode
-		 * 	for every kid
-		 * 		if kid < beta
-		 * 			beta = kid
-		 *		if beta <= alpha
-		 *			break
-		 *	return bestMove   - beta
-		 * if maxNode
-		 * 	for every kid
-		 * 		if kid > alpha
-		 * 			alpha = kid
-		 * 		if beta <= alpha
-		 * 			break
-		 * 	return bestMove   - alpha
-		 */
+		boolean isMinNode = (side != mySide);
+		// Store our best move
+		MoveScore bestMove = new MoveScore(isMinNode ? Integer.MAX_VALUE : Integer.MIN_VALUE);
 		
-		// If we are a minNode (side != mySide)
-		if (side != mySide) {
-//			System.out.println("min player");
-			// Store our best move
-			MoveScore bestMove = new MoveScore(Integer.MAX_VALUE);
+		// Get all the children
+		MoveList moveList = board.allMoves(side, true);
+		if (moveList.isEmpty()) {
+			// There are no children, so evaluate and return
+			return new MoveScore(Evaluation.evaluateBoard(board, side));
 			
-			// Get all the children
-			MoveList moveList = board.allMoves(side, true);
-			if (moveList.isEmpty()) {
-				// There are no children, so evaluate and return
-				return new MoveScore(evaluateBoard(board, mySide));
-			}
+			//
+			//
+			//
+			//
+			// return new MoveScore(Evaluation.evaluateBoard(board, mySide));
+		}
+		Iterator<Move> i = moveList.iterator();
+		// Iterate through all the children
+		while (i.hasNext()) {
+			Move move = i.next();
+			board.move(move);
+			MoveScore current = predictBestMove(board, depth+1, Piece.opposite(side), alpha, beta);
+			current.setMove(move);
 			
-			Iterator<Move> i = moveList.iterator();
-			// Iterate through all the children
-//			System.out.printf("alpha %d, beta %d\n", alpha, beta);
-			while (i.hasNext()) {
-				Move move = i.next();
-				board.move(move);;
-				MoveScore current = predictBestMove(board, depth+1, Piece.opposite(side), alpha, beta);
-				current.setMove(move);
-//				System.out.println("  " + current);
-				
-				if (current.getScore() < beta) {
+			if (isMinNode ? current.getScore() < beta : current.getScore() > alpha) {
+				if (isMinNode)
 					beta = current.getScore();
-					bestMove = current;
-				}
-				
-				board.undo();
-				
-				if (beta <= alpha) {
-					break;
-				}
-			}
-//			System.out.println("best " + bestMove);
-			return bestMove;
-		} else {
-			// Store our best move
-			MoveScore bestMove = new MoveScore(Integer.MIN_VALUE);
-//			System.out.println("max player");
-			// Get all the children
-			MoveList moveList = board.allMoves(side, true);
-			if (moveList.isEmpty()) {
-				// There are no children, so evaluate and return
-				return new MoveScore(evaluateBoard(board, mySide));
+				else
+					alpha = current.getScore();
+				bestMove = current;
 			}
 			
-			Iterator<Move> i = moveList.iterator();
-			// Iterate through all the children
-//			System.out.printf("depth %d, alpha %d, beta %d\n", depth, alpha, beta);
-			while (i.hasNext()) {
-				Move move = i.next();
-				board.move(move);;
-				MoveScore current = predictBestMove(board, depth+1, Piece.opposite(side), alpha, beta);
-				current.setMove(move);
-//				System.out.println("  " + current);
-				
-				if (current.getScore() > alpha) {
-					alpha = current.getScore();
-					bestMove = current;
-				}
-				
-				board.undo();
-				
-				if (beta <= alpha) {
-					break;
-				}
-			}
-//			System.out.println("best " + bestMove);
-			return bestMove;
-		}
-	}
-	
-	private MoveScore predictBestMove(Board board, int depth,Side side) {
-		if (depth == endDepth || endTurn) {
-			return new MoveScore(evaluateBoard(board, mySide)); // Evaluate
-		} else {
-			MoveList moveList = board.allMoves(side, true);
-			if (moveList.isEmpty()) {
-				return new MoveScore(evaluateBoard(board, mySide));
-			}
-			Iterator<Move> i = moveList.iterator();
-			MoveScore bestMove = null;
-			if(side==mySide){
-				bestMove=new MoveScore(Integer.MIN_VALUE);
-			}else{
-				bestMove=new MoveScore(Integer.MAX_VALUE);
-			}
-			while (i.hasNext()) {
-				Move move = i.next();
-				board.move(move);
-				MoveScore current = predictBestMove(board, depth + 1,Piece.opposite(side));
-				current.setMove(move);
-				if(side==mySide){
-					if (current.getScore() > bestMove.getScore()) {
-						bestMove=current;
-					} else if (current.getScore() == bestMove.getScore() && Math.random() < 0.3) {
-						bestMove=current;
-					}
-				}else{
-					if (current.getScore() < bestMove.getScore()) {
-						bestMove=current;
-					} else if (current.getScore() == bestMove.getScore() && Math.random() < 0.3) {
-						bestMove=current;
-					}
-				}
-				board.undo();
-			}
-			return bestMove;
-		}
-	}
-	
-	class MoveScore{
-
-		double score;
-		Move move;
-		
-		public MoveScore(double score) {
-			this.score = score;
-		}
-		public void setMove(Move move) {
-			this.move = move;
-		}
-		public double getScore() {
-			return score;
-		}
-		public Move getMove() {
-			return move;
-		}
-		
-		public String toString() {
-			return "MoveScore [score=" + score + ", move=" + move + "]";
-		}
-	}
-	
-	
-	/**
-	 * Given a state of the board, evaluate the board with respect to the given side.
-	 * @param board
-	 * @param side
-	 * @return
-	 */
-	private double evaluateBoard(Board board, Side side) {
-		int myPoints = 0;
-		int enemyPoints = 0;
-		
-		for (int i = 0; i < board.getWidth(); i++) {
-			for (int j = 0; j < board.getHeight(); j++) {
-				Piece p = board.getPiece(new Position(i, j));
-				if (p != null) {
-					if (p.getSide().equals(side)) {
-						myPoints += getPieceValue(p);
-					} else {
-						enemyPoints += getPieceValue(p);
-					}
-				}
+			board.undo();
+			
+			if (beta <= alpha) {
+				break;
 			}
 		}
-		int runningPoints = myPoints - enemyPoints;
-		
-		if (runningPoints < 0 && (board.stalemate() || board.threeFold())) {
-			runningPoints += 1;
-		} else if (runningPoints > 0 && (board.stalemate() || board.threeFold())) {
-			runningPoints -= 2;
-		}
-		
-		if (board.checkmate(side)) {
-			runningPoints -= 1000;
-		}
-		return runningPoints;
+		TranspositionTable.putValue(board, bestMove, depth, endDepth);
+		return bestMove;
 	}
-	
-	private int getPieceValue(Piece p) {
-		return values.get(p.getClass());
-	}
-	
-	private HashMap<Class, Integer> setUpValues() {
-		HashMap<Class, Integer> values = new HashMap<Class, Integer>();
-		values.put(new Archbishop(null).getClass(), 4);
-		values.put(new Bishop(null).getClass(), 3);
-		values.put(new Chancellor(null).getClass(), 4);
-		values.put(new King(null).getClass(), 1000);
-		values.put(new Knight(null).getClass(), 3);
-		values.put(new Pawn(null).getClass(), 1);
-		values.put(new Queen(null).getClass(), 9);
-		values.put(new Rook(null).getClass(), 5);
-		return values;
-	}
-	
 	
 	public boolean isEndTurn() {
 		return endTurn;

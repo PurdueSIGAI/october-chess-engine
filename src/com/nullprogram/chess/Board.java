@@ -1,6 +1,7 @@
 package com.nullprogram.chess;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import com.nullprogram.chess.boards.BoardFactory;
@@ -24,8 +25,35 @@ public abstract class Board implements Serializable {
 
     /** Versioning for object serialization. */
     private static final long serialVersionUID = 244162996302362607L;
+    
+    @Override
+	public int hashCode() {
+		final int prime = 57;
+		int result = 1;
+		for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 7; j++)
+				if (board[i][j] != null)
+					result += prime * result + (i + 7 * j) * board[i][j].hashCode();
+		return result;
+	}
 
-    /** The internal board array. */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 7; j++) {
+				if (board[i][j] == null && ((Board)obj).board[i][j] == null)
+					continue;
+				else if (board[i][j] == null || ((Board)obj).board[i][j] == null)
+					return false; // basically XOR
+				else if (!board[i][j].equals(((Board)obj).board[i][j]))
+					return false;
+			}
+		return true;
+	}
+
+	/** The internal board array. */
     private Piece[][] board;
 
     /** The size of this game board. */

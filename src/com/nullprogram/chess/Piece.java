@@ -1,6 +1,13 @@
 package com.nullprogram.chess;
 
+import com.nullprogram.chess.pieces.Bishop;
 import com.nullprogram.chess.pieces.ImageServer;
+import com.nullprogram.chess.pieces.King;
+import com.nullprogram.chess.pieces.Knight;
+import com.nullprogram.chess.pieces.Pawn;
+import com.nullprogram.chess.pieces.Queen;
+import com.nullprogram.chess.pieces.Rook;
+
 import java.awt.Image;
 import java.io.Serializable;
 
@@ -27,7 +34,50 @@ public abstract class Piece implements Serializable {
     /** The position of this piece. */
     private Position pos;
 
-    /** The board this piece is on. */
+    /* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		if (this instanceof Pawn)
+			return 1 * side.value;
+		else if (this instanceof Rook)
+			return 2 * side.value;
+		else if (this instanceof Knight)
+			return 3 * side.value;
+		else if (this instanceof Bishop)
+			return 4 * side.value;
+		else if (this instanceof Queen)
+			return 5 * side.value;
+		else 
+			return 6 * side.value;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (((Piece) obj).getSide().value() != getSide().value())
+			return false;
+		if (obj instanceof Pawn && !(this instanceof Pawn))
+			return false;
+		if (obj instanceof Rook && !(this instanceof Rook))
+			return false;
+		if (obj instanceof Knight && !(this instanceof Knight))
+			return false;
+		if (obj instanceof Bishop && !(this instanceof Bishop))
+			return false;
+		if (obj instanceof Queen && !(this instanceof Queen))
+			return false;
+		if (obj instanceof King && !(this instanceof King))
+			return false;
+		return true;
+	}
+
+	/** The board this piece is on. */
     private Board board;
 
     /** Movement counter. */
