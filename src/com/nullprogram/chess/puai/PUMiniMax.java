@@ -53,11 +53,12 @@ public class PUMiniMax implements Player {
 		// Iteratively deepen the minimax search space until time runs out
 		do {
 			MoveScore moveScore=predictBestMove(board,0,side, Integer.MIN_VALUE, Integer.MAX_VALUE);
-			// We have searched the entire tree to endDepth, get rid of previous bestMove
-			// This allows us to compare only full trees and the depth we are currently searching if the turn ends
-			if (!endTurn) {
-				bestMove = new MoveScore(Integer.MIN_VALUE);
+			
+			if (endTurn) {
+				break;
 			}
+			// We have searched the entire tree to endDepth, get rid of previous bestMove
+			bestMove = new MoveScore(Integer.MIN_VALUE);
 			// Get the best move we have seen
 			if (moveScore.getScore() > bestMove.getScore()) {
 				bestMove = moveScore;

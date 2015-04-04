@@ -21,7 +21,7 @@ public final class Chess {
     /** The program's running title, prefix only. */
     private static final String TITLE_PREFIX = "October Chess";
     
-    public static final int AI_MAX_TIME = 2000;
+    public static final int AI_MAX_TIME = 3000;
 
     /**
      * Hidden constructor.
