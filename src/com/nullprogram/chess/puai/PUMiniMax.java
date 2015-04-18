@@ -67,8 +67,8 @@ public class PUMiniMax implements Player {
 		
 		timerTask.cancel();
 		timer.purge();
-		System.out.println("Search ended on ply " + endDepth + ".");
-		System.out.println(bestMove);
+	//	System.out.println("Search ended on ply " + endDepth + ".");
+	//	System.out.println(bestMove);
 		return bestMove.getMove();
 	}
 	
