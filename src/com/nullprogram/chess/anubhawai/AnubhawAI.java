@@ -282,7 +282,10 @@ public class AnubhawAI implements Player {
 		double material = materialValue(b, side);
 		double kingSafety = kingInsafetyValue(b, side);
 		double mobility = mobilityValue(b, side);
-		return material * 1.0 + kingSafety * 0.15 + mobility * .01;
+		double checkMateMe = b.checkmate(side) ? -1000 : 0;
+		double checkMateThem = b.checkmate(Piece.opposite(side)) ? 1000 : 0;
+		return material * 1.0 + kingSafety * 0.15 + mobility * .01
+				+ checkMateMe + checkMateThem;
 	}
 
 	/**
