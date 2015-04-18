@@ -53,11 +53,12 @@ public class PUMiniMax implements Player {
 		// Iteratively deepen the minimax search space until time runs out
 		do {
 			MoveScore moveScore=predictBestMove(board,0,side, Integer.MIN_VALUE, Integer.MAX_VALUE);
-			// We have searched the entire tree to endDepth, get rid of previous bestMove
-			// This allows us to compare only full trees and the depth we are currently searching if the turn ends
-			if (!endTurn) {
-				bestMove = new MoveScore(Integer.MIN_VALUE);
+			
+			if (endTurn) {
+				break;
 			}
+			// We have searched the entire tree to endDepth, get rid of previous bestMove
+			bestMove = new MoveScore(Integer.MIN_VALUE);
 			// Get the best move we have seen
 			if (moveScore.getScore() > bestMove.getScore()) {
 				bestMove = moveScore;
@@ -272,14 +273,14 @@ public class PUMiniMax implements Player {
 	
 	private HashMap<Class, Integer> setUpValues() {
 		HashMap<Class, Integer> values = new HashMap<Class, Integer>();
-		values.put(new Archbishop(null).getClass(), 4);
-		values.put(new Bishop(null).getClass(), 3);
-		values.put(new Chancellor(null).getClass(), 4);
-		values.put(new King(null).getClass(), 1000);
-		values.put(new Knight(null).getClass(), 3);
-		values.put(new Pawn(null).getClass(), 1);
-		values.put(new Queen(null).getClass(), 9);
-		values.put(new Rook(null).getClass(), 5);
+		values.put(Archbishop.class, 4);
+		values.put(Bishop.class, 3);
+		values.put(Chancellor.class, 4);
+		values.put(King.class, 1000);
+		values.put(Knight.class, 3);
+		values.put(Pawn.class, 1);
+		values.put(Queen.class, 9);
+		values.put(Rook.class, 5);
 		return values;
 	}
 	

@@ -4,8 +4,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import com.nullprogram.chess.boards.BoardFactory;
-import com.nullprogram.chess.boards.StandardBoard;
+import com.nullprogram.chess.pieces.Archbishop;
 import com.nullprogram.chess.pieces.Bishop;
+import com.nullprogram.chess.pieces.Chancellor;
 import com.nullprogram.chess.pieces.King;
 import com.nullprogram.chess.pieces.Knight;
 import com.nullprogram.chess.pieces.Pawn;
@@ -386,6 +387,10 @@ public abstract class Board implements Serializable {
                 		ret.append("Q");
                 	} else if (p instanceof Rook) {
                 		ret.append("R");
+                	} else if (p instanceof Archbishop) {
+                		ret.append("A");
+                	} else if (p instanceof Chancellor) {
+                		ret.append("C");
                 	}
                 }
             }
@@ -394,7 +399,7 @@ public abstract class Board implements Serializable {
     }
 
 	public boolean threeFold() {
-		Board testBoard = BoardFactory.create(StandardBoard.class);
+		Board testBoard = BoardFactory.create(this.getClass());
 		HashMap<String, Integer> boards = new HashMap<String, Integer>();
 		for (Move m : moves) {
 			testBoard.move(m);
@@ -412,7 +417,7 @@ public abstract class Board implements Serializable {
 	}
 
 	public boolean fiftyMoveRule() {
-		Board testBoard = BoardFactory.create(StandardBoard.class);
+		Board testBoard = BoardFactory.create(this.getClass());
 		HashMap<String, Integer> boards = new HashMap<String, Integer>();
 		int movesSince = 0;
 		for (Move m : moves) {

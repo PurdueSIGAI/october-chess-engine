@@ -54,6 +54,8 @@ public class Game implements Runnable {
 
     /** When the game is done, this is the winner. */
     private Piece.Side winner;
+    
+    private int turnNumber;
 
     /** List of event listeners. */
     private final Collection<GameListener> listeners =
@@ -72,6 +74,7 @@ public class Game implements Runnable {
      */
     public Game(final Board gameBoard) {
         board = gameBoard;
+        turnNumber = 0;
     }
 
     /**
@@ -108,6 +111,7 @@ public class Game implements Runnable {
     @Override
     public final void run() {
         while (!done) {
+        	turnNumber++;
             /* Determine who's turn it is. */
             Player player;
             if (turn == Piece.Side.WHITE) {
@@ -218,7 +222,7 @@ public class Game implements Runnable {
      * @param message  new status message
      */
     public final void setStatus(final String message) {
-        LOG.info("status: " + message);
+        LOG.info("status: " + message + " Turn: " + turnNumber);
         if (message == null) {
             throw new IllegalArgumentException();
         }
@@ -287,4 +291,8 @@ public class Game implements Runnable {
     public final float getProgress() {
         return progress;
     }
+
+	public int getTurnNumber() {
+		return turnNumber;
+	}
 }
