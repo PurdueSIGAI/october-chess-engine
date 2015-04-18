@@ -83,14 +83,14 @@ public class AnubhawAI implements Player {
 		return bestMove.getMove();
 	}
 
-	private MoveScore parallelPrediction(Board board, int depth, Side side,
-			double alpha, double beta, int finalDepth) {
+	private MoveScore parallelPrediction(Board board, final int depth, final Side side,
+			final double alpha, final double beta, final int finalDepth) {
 		MoveList moves = board.allMoves(side, true);
 		CompletionService<MoveScore> service = new ExecutorCompletionService<MoveScore>(
 				executor);
 		finalBestMove = new MoveScore(Integer.MIN_VALUE);
-		for (Move move : moves) {
-			Board callboard = board.copy();
+		for (final Move move : moves) {
+			final Board callboard = board.copy();
 			service.submit(new Callable<MoveScore>() {
 				public MoveScore call() {
 					callboard.move(move);
