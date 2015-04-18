@@ -93,7 +93,7 @@ public class NikolasAI implements Player {
 		
 		timerTask.cancel();
 		timer.purge();
-		System.out.println("[NikolasAI] Search ended on ply " + (endDepth-1) + ".");
+		System.out.println("[NikolasAI] Search ended on ply " + (endDepth) + ".");
 		System.out.println(bestMove);
 		return bestMove.getMove();
 	}
@@ -324,7 +324,7 @@ public class NikolasAI implements Player {
 	private static final double MATERIAL_WEIGHT = 1.0;
 	private static final double KING_SAFETY_WEIGHT = 0.15;
 	private static final double MOBILITY_WEIGHT = 0.01;
-	private static final double PAWN_WEIGHT = 0.2;
+	private static final double PAWN_WEIGHT = 0.1;
 	
 	/**
 	 * Given a state of the board, evaluate the board with respect to the given side.
