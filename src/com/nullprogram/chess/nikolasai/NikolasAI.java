@@ -1,8 +1,15 @@
 package com.nullprogram.chess.nikolasai;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Timer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
 
 import com.nullprogram.chess.Board;
 import com.nullprogram.chess.Chess;
@@ -37,6 +44,10 @@ public class NikolasAI implements Player {
 	private HashMap<Class, Integer> values;
 	private Game game;
 	Side mySide;
+	
+	/** Thread manager. */
+    private final Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	
 	public NikolasAI(Game game) {
 		values = setUpValues();
 		this.game = game;
@@ -59,8 +70,14 @@ public class NikolasAI implements Player {
 		
 		// Iteratively deepen the minimax search space until time runs out
 		do {
-			MoveScore moveScore=predictBestMove(board,0,side, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			MoveScore moveScore=runThreads(board,0,side, Integer.MIN_VALUE, Integer.MAX_VALUE);
 //			System.out.println(moveScore.getDepth() + " " + endDepth + " " + endTurn);
+			
+			// Check for early checkmates
+			if (moveScore.getScore() > 500) {
+				bestMove = moveScore;
+				break;
+			}
 			
 			if (endTurn) {
 				break;
@@ -76,10 +93,53 @@ public class NikolasAI implements Player {
 		
 		timerTask.cancel();
 		timer.purge();
-		System.out.println("Search ended on ply " + (endDepth-1) + ".");
+		System.out.println("[NikolasAI] Search ended on ply " + (endDepth) + ".");
 		System.out.println(bestMove);
 		return bestMove.getMove();
 	}
+	
+	private MoveScore runThreads(final Board board, int depth, final Side side, double alpha, double beta) {
+		
+		/* Spin off threads to evaluate each move's tree. */
+        CompletionService<MoveScore> service =
+            new ExecutorCompletionService<MoveScore>(executor);
+        
+        MoveList moves = board.allMoves(side, true);
+        moves.shuffle();
+        
+        int submitted = 0;
+        for (final Move move : moves) {
+            final Board callboard = board.copy();
+            service.submit(new Callable<MoveScore>() {
+                public MoveScore call() {
+                    callboard.move(move);
+                    MoveScore score = predictBestMove(callboard,0,Piece.opposite(side), Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    score.setMove(move);
+                    return score;
+                }
+            });
+            submitted++;
+        }
+
+        /* Gather up results and pick the best move. */
+        MoveScore best = new MoveScore(Double.NEGATIVE_INFINITY, endDepth);
+        for (int i = 0; i < submitted; i++) {
+            try {
+                MoveScore m = service.take().get();
+                if (best == null || m.getScore() > best.getScore()) {
+                	best = m;
+                }
+            } catch (ExecutionException e) {
+                System.out.println("move went unevaluated: " + e.getMessage());
+            } catch (InterruptedException e) {
+            	System.out.println("move went unevaluated: " + e.getMessage());
+            }
+        }
+		
+		
+		return best;
+	}
+	
 	
 	private MoveScore predictBestMove(Board board, int depth, Side side, double alpha, double beta) {
 		if (depth == endDepth || endTurn) {
@@ -264,6 +324,7 @@ public class NikolasAI implements Player {
 	private static final double MATERIAL_WEIGHT = 1.0;
 	private static final double KING_SAFETY_WEIGHT = 0.15;
 	private static final double MOBILITY_WEIGHT = 0.01;
+	private static final double PAWN_WEIGHT = 0.1;
 	
 	/**
 	 * Given a state of the board, evaluate the board with respect to the given side.
@@ -284,12 +345,25 @@ public class NikolasAI implements Player {
 		 *  
 		 *  Avoiding / preferring ties
 		 */
-		
+		ArrayList<Piece> myPieces = new ArrayList<Piece>();
+		ArrayList<Piece> theirPieces = new ArrayList<Piece>();
+		for (int i = 0; i < board.getWidth(); i++) {
+			for (int j = 0; j < board.getHeight(); j++) {
+				Piece p = board.getPiece(new Position(i, j));
+				if (p != null) {
+					if (p.getSide().equals(side)) {
+						myPieces.add(p);
+					} else {
+						theirPieces.add(p);
+					}
+				}
+			}
+		}
 		
 		double runningPoints = 0;
 		
 		// Calculate the value of the pieces on the board
-		double materialValue = getMaterialScore(board, side);
+		double materialValue = getMaterialScore(board, side, myPieces, theirPieces);
 		runningPoints += materialValue * MATERIAL_WEIGHT;
 		
 		double kingSafety = getKingSafetyScore(board, side);
@@ -297,6 +371,9 @@ public class NikolasAI implements Player {
 		
 		double mobility = getMobilityScore(board, side);
 		runningPoints += mobility * MOBILITY_WEIGHT;
+		
+		double pawn = getPawnScore(board, myPieces, theirPieces);
+		runningPoints += pawn * PAWN_WEIGHT;
 		
 		
 		// If we are losing, favor ties
@@ -308,7 +385,10 @@ public class NikolasAI implements Player {
 		}
 		
 		if (board.checkmate(side)) {
-			runningPoints -= 1000;
+			runningPoints -= 10000;
+		}
+		if (board.checkmate(Piece.opposite(side))) {
+			runningPoints += 10000;
 		}
 		return runningPoints;
 	}
@@ -319,35 +399,17 @@ public class NikolasAI implements Player {
 	 * @param side
 	 * @return
 	 */
-	private double getMaterialScore(Board board, Side side) {
+	private double getMaterialScore(Board board, Side side, ArrayList<Piece> myPieces, ArrayList<Piece> theirPieces) {
 		double myPoints = 0;
 		double enemyPoints = 0;
 		
-		for (int i = 0; i < board.getWidth(); i++) {
-			for (int j = 0; j < board.getHeight(); j++) {
-				Piece p = board.getPiece(new Position(i, j));
-				if (p != null) {
-					if (p.getSide().equals(side)) {
-						myPoints += getPieceValue(p);
-					} else {
-						enemyPoints += getPieceValue(p);
-					}
-				}
-			}
+		for (Piece p : myPieces) {
+			myPoints += getPieceValue(p);
+		}
+		for (Piece p : theirPieces) {
+			enemyPoints += getPieceValue(p);
 		}
 		return myPoints - enemyPoints;
-		
-//		double value = 0;
-//        for (int y = 0; y < board.getHeight(); y++) {
-//            for (int x = 0; x < board.getWidth(); x++) {
-//                Position pos = new Position(x, y);
-//                Piece p = board.getPiece(pos);
-//                if (p != null) {
-//                    value += values.get(p.getClass()) * p.getSide().value();
-//                }
-//            }
-//        }
-//        return value * side.value();
 	}
 	
 	/**
@@ -374,11 +436,11 @@ public class NikolasAI implements Player {
 			return 0;
 		}
 		Piece king = board.getPiece(kingPos);
-		MoveList list = new MoveList(board, false);
-		Rook.getMoves(king, list);
-		Bishop.getMoves(king, list);
-		return list.size();
-//		return king.getMoves(true).size();
+//		MoveList list = new MoveList(board, false);
+//		Rook.getMoves(king, list);
+//		Bishop.getMoves(king, list);
+//		return list.size();
+		return king.getMoves(true).size();
 //		int numImmediateAttackers = 0;
 //		Side attacker = Piece.opposite(side);
 //		if (board.check(side)) {
@@ -405,9 +467,76 @@ public class NikolasAI implements Player {
 	 * @return
 	 */
 	private double getMobilityScore(Board board, Side side) {
+		
 		double rawScore = board.allMoves(side, false).size() - board.allMoves(Piece.opposite(side), false).size();
 		//double finalScore = rawScore / (5.0 + Math.abs(rawScore));
 		return rawScore;
+	}
+	
+	private double getPawnScore(Board board, ArrayList<Piece> myPieces, ArrayList<Piece> theirPieces) {
+		double score = 0;
+		
+		for (Piece p : myPieces) {
+			if (!(p instanceof Pawn)) {
+				continue;
+			}
+			int count = 0;
+			boolean open = true;
+			if (mySide.equals(Piece.Side.BLACK)) {
+				Position pos = p.getPosition();
+				for (int i = 0; i < pos.getY(); i++) {
+					Piece o = board.getPiece(new Position(pos.getX(), pos.getY()));
+					if (o != null && o.getSide().equals(Piece.opposite(mySide))) {
+						open = false;
+					}
+					count++;
+				}
+			} else {
+				Position pos = p.getPosition();
+				for (int i = pos.getY() + 1; i < board.getHeight(); i++) {
+					Piece o = board.getPiece(new Position(pos.getX(), pos.getY()));
+					if (o != null && o.getSide().equals(Piece.opposite(mySide))) {
+						open = false;
+					}
+					count++;
+				}
+			}
+			if (open) {
+				score += (8 - count);
+			}
+		}
+		
+		Side theirSide = Piece.opposite(mySide);
+		for (Piece p : theirPieces) {
+			if (!(p instanceof Pawn)) {
+				continue;
+			}
+			int count = 0;
+			boolean open = true;
+			if (theirSide.equals(Piece.Side.BLACK)) {
+				Position pos = p.getPosition();
+				for (int i = 0; i < pos.getY(); i++) {
+					Piece o = board.getPiece(new Position(pos.getX(), pos.getY()));
+					if (o != null && o.getSide().equals(Piece.opposite(theirSide))) {
+						open = false;
+					}
+					count++;
+				}
+			} else {
+				Position pos = p.getPosition();
+				for (int i = pos.getY() + 1; i < board.getHeight(); i++) {
+					Piece o = board.getPiece(new Position(pos.getX(), pos.getY()));
+					if (o != null && o.getSide().equals(Piece.opposite(theirSide))) {
+						open = false;
+					}
+					count++;
+				}
+			}
+			if (open) {
+				score -= (8 - count);
+			}
+		}
+		return score;
 	}
 	
 	/**
