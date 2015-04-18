@@ -28,6 +28,7 @@ public class PlayerSelector extends JPanel {
     	"Michael AI",
     	"Kumar AI",
     	"Anubhaw AI",
+    	"Logan AI",
         "Fool (2 plies)",
         "Very Easy (3 plies)",
         "Easy (4 plies)",
@@ -39,7 +40,7 @@ public class PlayerSelector extends JPanel {
 
     /** Configuration names corresponding to LABELS_AI. */
     private static final String[] NAMES_AI = {
-        "puai", "nikolasai", "matthewpai", "michaelai", "kumarai","anubhawai", "depth2", "depth3", "depth4", "depth5", "depth6", "depth7", "depth8",
+        "puai", "nikolasai", "matthewpai", "michaelai", "kumarai","anubhawai", "loganai", "depth2", "depth3", "depth4", "depth5", "depth6", "depth7", "depth8",
     };
 
     /** Selection for a human player. */

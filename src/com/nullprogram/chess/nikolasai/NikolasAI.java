@@ -301,15 +301,15 @@ public class NikolasAI implements Player {
 		
 		// If we are losing, favor ties
 		// If we are winning, try to avoid ties
-//		if (runningPoints < 0 && (board.stalemate() || board.threeFold())) {
-//			runningPoints += 1;
-//		} else if (runningPoints > 0 && (board.stalemate() || board.threeFold())) {
-//			runningPoints -= 2;
-//		}
-//		
-//		if (board.checkmate(side)) {
-//			runningPoints -= 1000;
-//		}
+		if (runningPoints < 0 && (board.stalemate() || board.threeFold())) {
+			runningPoints += 1;
+		} else if (runningPoints > 0 && (board.stalemate() || board.threeFold())) {
+			runningPoints -= 2;
+		}
+		
+		if (board.checkmate(side)) {
+			runningPoints -= 1000;
+		}
 		return runningPoints;
 	}
 	
@@ -320,34 +320,34 @@ public class NikolasAI implements Player {
 	 * @return
 	 */
 	private double getMaterialScore(Board board, Side side) {
-//		double myPoints = 0;
-//		double enemyPoints = 0;
-//		
-//		for (int i = 0; i < board.getWidth(); i++) {
-//			for (int j = 0; j < board.getHeight(); j++) {
-//				Piece p = board.getPiece(new Position(i, j));
-//				if (p != null) {
-//					if (p.getSide().equals(side)) {
-//						myPoints += getPieceValue(p);
-//					} else {
-//						enemyPoints += getPieceValue(p);
-//					}
-//				}
-//			}
-//		}
-//		return myPoints - enemyPoints;
+		double myPoints = 0;
+		double enemyPoints = 0;
 		
-		double value = 0;
-        for (int y = 0; y < board.getHeight(); y++) {
-            for (int x = 0; x < board.getWidth(); x++) {
-                Position pos = new Position(x, y);
-                Piece p = board.getPiece(pos);
-                if (p != null) {
-                    value += values.get(p.getClass()) * p.getSide().value();
-                }
-            }
-        }
-        return value * side.value();
+		for (int i = 0; i < board.getWidth(); i++) {
+			for (int j = 0; j < board.getHeight(); j++) {
+				Piece p = board.getPiece(new Position(i, j));
+				if (p != null) {
+					if (p.getSide().equals(side)) {
+						myPoints += getPieceValue(p);
+					} else {
+						enemyPoints += getPieceValue(p);
+					}
+				}
+			}
+		}
+		return myPoints - enemyPoints;
+		
+//		double value = 0;
+//        for (int y = 0; y < board.getHeight(); y++) {
+//            for (int x = 0; x < board.getWidth(); x++) {
+//                Position pos = new Position(x, y);
+//                Piece p = board.getPiece(pos);
+//                if (p != null) {
+//                    value += values.get(p.getClass()) * p.getSide().value();
+//                }
+//            }
+//        }
+//        return value * side.value();
 	}
 	
 	/**
